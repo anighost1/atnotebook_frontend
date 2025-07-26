@@ -77,11 +77,6 @@ export default function Notebooks() {
                             <CardHeader>
                                 <CardTitle>{notebook?.title}</CardTitle>
                                 <CardAction>
-                                    {/* <Button onClick={handleDelete} variant="outline" size="icon" className="size-8">
-                                        <Trash className="text-red-500" />
-                                    </Button> */}
-
-
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button onClick={handlePropagation} variant="outline" size="icon" className="size-8">
