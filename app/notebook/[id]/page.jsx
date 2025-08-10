@@ -1,15 +1,19 @@
 "use client"
 
 import { Badge } from '@/components/ui/badge'
+import debounce from 'lodash/debounce'
 import Cookies from 'js-cookie'
 import { BadgeCheckIcon } from 'lucide-react'
 import { use, useEffect, useRef, useState } from 'react'
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function Notebook({ params }) {
 
     const { id } = use(params)
 
-    const [messages, setMessages] = useState([])
+    const [notebookData, setNotebookData] = useState({})
+    const [notebookContent, setNotebookContent] = useState('')
     const [connectedUsers, setConnectedUsers] = useState([])
     const socketRef = useRef(null)
     const token = Cookies.get('access')
@@ -21,7 +25,7 @@ export default function Notebook({ params }) {
         }
 
         const encodedToken = encodeURIComponent(token)
-        const wsUrl = `ws://localhost:8000/ws/notebook-collab/?id=${id}&token=${encodedToken}`
+        const wsUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL_WS}/ws/notebook-collab/?id=${id}&token=${encodedToken}`
 
         const socket = new WebSocket(wsUrl)
         socketRef.current = socket
@@ -36,7 +40,13 @@ export default function Notebook({ params }) {
             if (data?.type === 'user_list') {
                 setConnectedUsers(data?.users)
             }
-            setMessages(prev => [...prev, JSON.stringify(data)])
+            if (data?.type === 'notebook_data') {
+                setNotebookData(data?.notebook)
+                setNotebookContent(data?.notebook?.content)
+            }
+            if (data?.type === 'notebook_update') {
+                setNotebookContent(data?.content)
+            }
         }
 
         socket.onerror = (error) => {
@@ -53,8 +63,21 @@ export default function Notebook({ params }) {
 
     }, [])
 
+    const debouncedSend = useRef(
+        debounce((content) => {
+            if (socketRef.current?.readyState === WebSocket.OPEN) {
+                socketRef.current.send(
+                    JSON.stringify({
+                        type: 'update_notebook',
+                        content,
+                    })
+                )
+            }
+        }, 500)
+    ).current
+
     return (
-        <div className="p-4 ">
+        <div className="p-4 flex flex-col gap-4 ">
             <div className='flex flex-row gap-2 justify-start items-center '>
                 {connectedUsers.map((user, index) => (
                     <Badge
@@ -66,6 +89,20 @@ export default function Notebook({ params }) {
                         {user}
                     </Badge>
                 ))}
+            </div>
+            <div className="grid w-full gap-3">
+                <Label htmlFor="message">{notebookData?.title}</Label>
+                <Textarea
+                    placeholder="Notebook Data"
+                    id="message"
+                    value={notebookContent}
+                    onChange={(e) => {
+                        const value = e.target.value
+                        setNotebookContent(value)
+                        debouncedSend(value)
+                    }}
+                    className={'min-h-[50vh]'}
+                />
             </div>
         </div>
     );
