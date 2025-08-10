@@ -1,7 +1,7 @@
 import api from "@/lib/axios"
 
-export const getNotebooksApi = async () => {
-    return await api.get(`/api/notebook/`)
+export const getNotebooksApi = async (collab = false) => {
+    return await api.get(`/api/notebook/${collab?'?forSelf=false&forCollab=true':''}`)
 }
 
 export const createNotebooksApi = async (data) => {

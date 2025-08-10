@@ -25,13 +25,15 @@ import { Badge } from "@/components/ui/badge"
 import AddNotebook from "@/components/notebook/addNotebook";
 import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Notebooks() {
 
     const [notebooks, setNotebooks] = useState([])
     const [refetch, setRefetch] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams();
+    let collab = searchParams.get('collab') ? true : false
 
     const triggerRefetch = () => {
         setRefetch(prev => !prev)
@@ -40,14 +42,14 @@ export default function Notebooks() {
     useEffect(() => {
         const getNotebooks = async () => {
             try {
-                const response = await getNotebooksApi()
+                const response = await getNotebooksApi(collab)
                 setNotebooks(response?.data)
             } catch (err) {
                 console.log(err)
             }
         }
         getNotebooks()
-    }, [refetch])
+    }, [refetch, collab])
 
     const handleRedirect = (notebookId) => {
         router.push(`/notebook/${notebookId}`)

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/sidebar"
 import { GalleryVerticalEnd } from "lucide-react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 
 const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
@@ -36,6 +36,10 @@ const data = {
         {
           title: "My Notebooks",
           url: "/notebook",
+        },
+        {
+          title: "My Collaborations",
+          url: "/notebook?collab=true",
         }
       ],
     },
@@ -47,6 +51,9 @@ export function AppSidebar({
 }) {
 
   const pathname = usePathname()
+  const searchParams = useSearchParams();
+
+  const currentFullPath = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
 
   return (
     <Sidebar {...props}>
@@ -67,7 +74,7 @@ export function AppSidebar({
               <SidebarMenu>
                 {item.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.url === pathname}>
+                    <SidebarMenuButton asChild isActive={item.url === currentFullPath}>
                       <Link href={item.url}>{item.title}</Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
