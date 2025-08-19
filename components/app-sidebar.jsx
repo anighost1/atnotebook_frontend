@@ -1,3 +1,4 @@
+"use client"
 
 import * as React from "react"
 import {
@@ -11,10 +12,26 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarFooter
 } from "@/components/ui/sidebar"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { GalleryVerticalEnd } from "lucide-react"
 import Link from "next/link"
-import { usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams, useRouter } from "next/navigation"
+import UserDetailsFetcher from "@/lib/userDetailsFetcher"
+import { LogOut } from "lucide-react"
+import { Button } from "./ui/button"
+import Cookies from "js-cookie"
 
 const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
@@ -43,6 +60,20 @@ const data = {
         }
       ],
     },
+    {
+      title: "Friends",
+      url: "#",
+      items: [
+        {
+          title: "Friend List",
+          url: "/friends",
+        },
+        {
+          title: "Pending Requests",
+          url: "/friends?status=pending",
+        }
+      ],
+    },
   ],
 }
 
@@ -66,7 +97,6 @@ export function AppSidebar({
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
@@ -84,7 +114,52 @@ export function AppSidebar({
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <Logout />
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
+}
+
+
+const Logout = () => {
+  const [currentUser, setCurrentUser] = React.useState({})
+  const router = useRouter()
+
+  React.useEffect(() => {
+    const data = UserDetailsFetcher()
+    setCurrentUser(data)
+  }, [])
+
+  const handleLogout = () => {
+    Cookies.remove('access')
+    Cookies.remove('refresh')
+    router.replace('/login')
+  }
+
+  return (
+    <div className="p-4 flex flex-row justify-between items-center">
+      {currentUser?.username}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="outline" size="icon" className="size-8">
+            <LogOut className="text-red-700" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action will log you out.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className={'bg-red-700'} onClick={handleLogout}>Log Out</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
+  )
 }

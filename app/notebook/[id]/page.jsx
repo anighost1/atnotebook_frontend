@@ -7,6 +7,9 @@ import { BadgeCheckIcon } from 'lucide-react'
 import { use, useEffect, useRef, useState } from 'react'
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from '@/components/ui/button'
+import AddCollaborator from '@/components/notebook/addCollaborator'
+import UserDetailsFetcher from '@/lib/userDetailsFetcher'
 
 export default function Notebook({ params }) {
 
@@ -17,6 +20,7 @@ export default function Notebook({ params }) {
     const [connectedUsers, setConnectedUsers] = useState([])
     const socketRef = useRef(null)
     const token = Cookies.get('access')
+    const [currentUser, setCurrentUser] = useState({})
 
     useEffect(() => {
         if (!token) {
@@ -76,6 +80,12 @@ export default function Notebook({ params }) {
         }, 500)
     ).current
 
+    useEffect(() => {
+        const data = UserDetailsFetcher()
+        console.log(data,notebookData)
+        setCurrentUser(data)
+    }, [])
+
     return (
         <div className="p-4 flex flex-col gap-4 ">
             <div className='flex flex-row gap-2 justify-start items-center '>
@@ -91,7 +101,10 @@ export default function Notebook({ params }) {
                 ))}
             </div>
             <div className="grid w-full gap-3">
-                <Label htmlFor="message">{notebookData?.title}</Label>
+                <div className='flex flex-row justify-between items-center'>
+                    <Label htmlFor="message">{notebookData?.title}</Label>
+                    {notebookData?.owner_id === currentUser?.user_id && (<AddCollaborator notebookData={notebookData} />)}
+                </div>
                 <Textarea
                     placeholder="Notebook Data"
                     id="message"

@@ -69,9 +69,18 @@ export default function Notebooks() {
         }
     }
 
+    if (notebooks.length < 1) {
+        return (
+            <div className=" rounded-sm bg-[#55555511] m-2 flex justify-center items-center py-8">
+                <AddNotebook triggerRefetch={triggerRefetch} />
+                <p className="font-semibold">No notebook to show</p>
+            </div>
+        )
+    }
+
     return (
         <>
-            <AddNotebook triggerRefetch={triggerRefetch} />
+            {!collab && (<AddNotebook triggerRefetch={triggerRefetch} />)}
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {
                     notebooks?.map((notebook, index) => (
@@ -80,11 +89,11 @@ export default function Notebooks() {
                                 <CardTitle>{notebook?.title}</CardTitle>
                                 <CardAction>
                                     <AlertDialog>
-                                        <AlertDialogTrigger asChild>
+                                        {!collab && (<AlertDialogTrigger asChild>
                                             <Button onClick={handlePropagation} variant="outline" size="icon" className="size-8">
                                                 <Trash className="text-red-700" />
                                             </Button>
-                                        </AlertDialogTrigger>
+                                        </AlertDialogTrigger>)}
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
                                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>

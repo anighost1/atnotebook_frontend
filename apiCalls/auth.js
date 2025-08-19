@@ -7,3 +7,7 @@ export const login = async (data) => {
 export const refresh = async (data) => {
     return await api.post(`/api/token/refresh/`, data)
 }
+
+export const register = async (data) => {
+    return await api.post(`/api/users/`, data)
+}
