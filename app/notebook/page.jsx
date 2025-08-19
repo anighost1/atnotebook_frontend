@@ -25,13 +25,15 @@ import { Badge } from "@/components/ui/badge"
 import AddNotebook from "@/components/notebook/addNotebook";
 import { Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Notebooks() {
 
     const [notebooks, setNotebooks] = useState([])
     const [refetch, setRefetch] = useState(false)
     const router = useRouter()
+    const searchParams = useSearchParams();
+    let collab = searchParams.get('collab') ? true : false
 
     const triggerRefetch = () => {
         setRefetch(prev => !prev)
@@ -40,14 +42,14 @@ export default function Notebooks() {
     useEffect(() => {
         const getNotebooks = async () => {
             try {
-                const response = await getNotebooksApi()
+                const response = await getNotebooksApi(collab)
                 setNotebooks(response?.data)
             } catch (err) {
                 console.log(err)
             }
         }
         getNotebooks()
-    }, [refetch])
+    }, [refetch, collab])
 
     const handleRedirect = (notebookId) => {
         router.push(`/notebook/${notebookId}`)
@@ -67,9 +69,18 @@ export default function Notebooks() {
         }
     }
 
+    if (notebooks.length < 1) {
+        return (
+            <div className=" rounded-sm bg-[#55555511] m-2 flex justify-center items-center py-8">
+                <AddNotebook triggerRefetch={triggerRefetch} />
+                <p className="font-semibold">No notebook to show</p>
+            </div>
+        )
+    }
+
     return (
         <>
-            <AddNotebook triggerRefetch={triggerRefetch} />
+            {!collab && (<AddNotebook triggerRefetch={triggerRefetch} />)}
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {
                     notebooks?.map((notebook, index) => (
@@ -77,17 +88,12 @@ export default function Notebooks() {
                             <CardHeader>
                                 <CardTitle>{notebook?.title}</CardTitle>
                                 <CardAction>
-                                    {/* <Button onClick={handleDelete} variant="outline" size="icon" className="size-8">
-                                        <Trash className="text-red-500" />
-                                    </Button> */}
-
-
                                     <AlertDialog>
-                                        <AlertDialogTrigger asChild>
+                                        {!collab && (<AlertDialogTrigger asChild>
                                             <Button onClick={handlePropagation} variant="outline" size="icon" className="size-8">
                                                 <Trash className="text-red-700" />
                                             </Button>
-                                        </AlertDialogTrigger>
+                                        </AlertDialogTrigger>)}
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
                                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
